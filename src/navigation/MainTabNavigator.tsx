@@ -12,7 +12,7 @@ const MainTabNavigator = () => {
                 <Tab.Screen
                     name="Chatbot"
                     component={ChatbotScreen}
-                  
+                  options={{headerShown:false}}
                 />
             </Tab.Navigator>
         </NavigationContainer>
