@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, ScrollView, PermissionsAndroid, Platform, StyleSheet, Image, FlatList, Dimensions, useWindowDimensions, TouchableOpacity, Alert } from 'react-native';
+import { View, Button, Text, ScrollView, PermissionsAndroid, Platform, StyleSheet, Image, FlatList, Dimensions, useWindowDimensions, TouchableOpacity, Alert, Appearance } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,6 +35,15 @@ const ChatbotScreen = () => {
         loadSearchHistory();
         return () => {
             Voice.destroy().then(Voice.removeAllListeners);
+        };
+    }, []);
+
+    useEffect(() => {
+        const appearanceListener = Appearance.addChangeListener(({ colorScheme }) => {
+            // Handle appearance change here (if needed)
+        });
+        return () => {
+            appearanceListener.remove();
         };
     }, []);
 
@@ -224,7 +233,7 @@ const ChatbotScreen = () => {
                         }}
                         style={styles.input}
                         mode="outlined"
-                        theme={{ colors: { primary: '#FF6347' } }}
+                        theme={{ colors: { primary: '#FF6347', background: '#fff' } }}
                         onFocus={() => setShowSuggestions(query.length > 0)}
                         onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                     />
