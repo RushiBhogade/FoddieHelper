@@ -50,7 +50,17 @@ React Native Paper for UI components
 React Native Community Voice for voice recognition
 React Navigation for navigation
 Contributing
-Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please open an issue or submit a pull request.
+Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please open an issue or submit a pull request.![Screenshot_1720420174](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/41452a28-1a5d-4ee9-bbc7-d687631305b4)
+![Screenshot_1720420170](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/4ed7ca30-95e0-44be-8964-66642198fa55)
+![Screenshot_1720420137](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/43415314-418b-4de2-a273-c2e03821ce1f)
+![Screenshot_1720420132](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/9ee51e30-f66a-4415-aac2-b9df20dd8b6e)
+![Screenshot_1720420127](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/35d72596-e431-41cd-8f47-148fc8f147aa)
+![Screenshot_1720420114](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/f8e4ea15-8115-4469-afb0-e8662257a279)
+![Screenshot_1720420109](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/58be8bf2-bec8-485d-93bb-5ca395261b57)
+![Screenshot_1720420080](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/f0a73757-a387-4d01-ac5f-293cc7ceb93b)
+![Screenshot_1720420076](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/3a63623f-17c2-431e-86c5-6ec5c2305160)
+![Screenshot_1720420180](https://github.com/RushiBhogade/FoddieHelper/assets/125214989/7e5938e9-5cef-4a38-9e1f-579bf739caba)
+
 
 License
 This project is licensed under the MIT License - see the LICENSE file for details.!
