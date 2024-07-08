@@ -209,6 +209,32 @@ const ChatbotScreen = () => {
         setShowSuggestions(false);
         fetchRecipes();
     };
+const handleSaveToShoppingList = async (recipe: Recipe) => {
+    try {
+        // Retrieve current shopping list from AsyncStorage
+        const currentList = await AsyncStorage.getItem('shoppingList');
+        let shoppingList = currentList ? JSON.parse(currentList) : [];
+ console.log('Current Shopping List:', currentList);
+        // Add new item to the shopping list
+        const newItem = {
+            name: recipe.title,
+            ingredients: recipe.ingredients.map(ingredient => ingredient.name),
+            instructions: recipe.instructions,
+        };
+        shoppingList.push(newItem);
+
+        // Save updated shopping list back to AsyncStorage
+        await AsyncStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+
+        // Provide feedback to the user (optional)
+        Alert.alert('Recipe Saved', `${recipe.title} added to your shopping list.`);
+    } catch (error) {
+        console.error('Failed to save recipe to shopping list', error);
+        Alert.alert('Error', 'Failed to save recipe to shopping list.');
+    }
+};
+
+
 
     return (
         <View style={styles.container}>
@@ -281,6 +307,12 @@ const ChatbotScreen = () => {
                                     onPress={() => toggleRecipeDetails(index)}
                                     color="#FF6347"
                                 />
+                              <Button
+    title="Save to Shopping List"
+    onPress={() => handleSaveToShoppingList(recipe)}
+    color="#FF6347"
+/>
+
                                 {expandedRecipe === index && (
                                     <View style={styles.recipeDetails}>
                                         <Text style={styles.recipeSectionTitle}>Ingredients:</Text>
@@ -384,8 +416,9 @@ const styles = StyleSheet.create({
     },
     recipeTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: '500',
         marginBottom: 10,
+        color:'black'
     },
     recipeImage: {
         width: '100%',
@@ -395,15 +428,18 @@ const styles = StyleSheet.create({
     },
     recipeDetails: {
         marginTop: 10,
+     
     },
     recipeSectionTitle: {
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 5,
+        color:'black'
     },
     recipeText: {
         fontSize: 14,
         marginBottom: 5,
+           color: '#888',
     },
     noRecipesContainer: {
         alignItems: 'center',
