@@ -79,7 +79,7 @@ const ChatbotScreen = () => {
             const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
                 params: {
                     query,
-                    apiKey: 'c0c0882cd3614847ab06e54f92b1f859',
+                    apiKey: 'a87f8a7cac31436c8f940478f73c325a',
                 }
             });
 
@@ -98,7 +98,7 @@ const ChatbotScreen = () => {
                 const recipesData = await Promise.all(response.data.results.map(async (result: any) => {
                     const recipeDetailResponse = await axios.get(`https://api.spoonacular.com/recipes/${result.id}/information`, {
                         params: {
-                            apiKey: 'c0c0882cd3614847ab06e54f92b1f859',
+                            apiKey: 'a87f8a7cac31436c8f940478f73c325a',
                         }
                     });
 

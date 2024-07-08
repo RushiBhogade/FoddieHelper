@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faRobot, faHistory } from '@fortawesome/free-solid-svg-icons'; // Import faHistory icon for History tab
+import { faRobot, faHistory } from '@fortawesome/free-solid-svg-icons'; 
 import HistoryScreen from '../screens/HistoryScreen';
 
 const Tab = createBottomTabNavigator();
@@ -22,7 +22,7 @@ const MainTabNavigator = () => {
                             iconName = faHistory;
                         }
 
-                        // You can return any component that you like here!
+        
                         return <FontAwesomeIcon icon={iconName} size={size} color={color} />;
                     },
                     tabBarActiveTintColor: '#FF6347',

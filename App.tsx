@@ -1,4 +1,4 @@
-// App.tsx
+
 import React from 'react';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
 
