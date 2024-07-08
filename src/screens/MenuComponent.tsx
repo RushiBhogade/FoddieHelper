@@ -31,12 +31,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onSelectCategory, show }) =>
                 </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.option} onPress={() => { onSelectCategory('vegan'); onClose(); }}>
+                <Image
+                    source={require('../images/vegan.png')}
+                    style={styles.optionImage}
+                />
                 <Text style={styles.optionText}>Vegan Foods</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.option} onPress={() => { onSelectCategory('vegetarian'); onClose(); }}>
+                <Image
+                    source={require('../images/vegetable.png')}
+                    style={styles.optionImage}
+                />
                 <Text style={styles.optionText}>Vegetarian Foods</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.option} onPress={() => { onSelectCategory('dairy'); onClose(); }}>
+                <Image
+                    source={require('../images/dairy.png')}
+                    style={styles.optionImage}
+                />
                 <Text style={styles.optionText}>Dairy Products</Text>
             </TouchableOpacity>
             <View style={styles.footer}>
@@ -83,9 +95,17 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     option: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 10,
         borderBottomWidth: 1,
         borderColor: '#eee',
+    },
+    optionImage: {
+        width: 30,
+        height: 30,
+        marginRight: 10,
+        resizeMode: 'contain',
     },
     optionText: {
         color: 'black',

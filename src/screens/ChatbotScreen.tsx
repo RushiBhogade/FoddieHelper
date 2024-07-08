@@ -6,7 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Voice from '@react-native-community/voice';
 import HTML from 'react-native-render-html';
 import Sidebar from './MenuComponent';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Example icon import, adjust as per your library and icon name
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faMicrophone, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 
 interface Recipe {
     id: number;
@@ -17,7 +18,7 @@ interface Recipe {
 }
 
 const ChatbotScreen = () => {
-    const { width, height } = useWindowDimensions(); // Using height for full-screen TextInput
+    const { width } = useWindowDimensions(); // Using width for contentWidth in HTML
     const [query, setQuery] = useState('');
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [isListening, setIsListening] = useState(false);
@@ -25,14 +26,36 @@ const ChatbotScreen = () => {
     const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showSidebar, setShowSidebar] = useState(false); // State to manage sidebar visibility
+    const [searchHistory, setSearchHistory] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         Voice.onSpeechResults = onSpeechResults;
         Voice.onSpeechError = onSpeechError;
+        loadSearchHistory();
         return () => {
             Voice.destroy().then(Voice.removeAllListeners);
         };
     }, []);
+
+    const loadSearchHistory = async () => {
+        try {
+            const history = await AsyncStorage.getItem('searchHistory');
+            if (history) {
+                setSearchHistory(JSON.parse(history));
+            }
+        } catch (error) {
+            console.error("Failed to load search history", error);
+        }
+    };
+
+    const saveSearchHistory = async (newHistory: string[]) => {
+        try {
+            await AsyncStorage.setItem('searchHistory', JSON.stringify(newHistory));
+        } catch (error) {
+            console.error("Failed to save search history", error);
+        }
+    };
 
     const toggleSidebar = () => {
         setShowSidebar(!showSidebar); // Toggle sidebar state
@@ -92,6 +115,11 @@ const ChatbotScreen = () => {
 
                 setRecipes(recipesData); // Update recipes state
                 await AsyncStorage.setItem('searchedRecipes', JSON.stringify(recipesData)); // Store recipes in AsyncStorage
+
+                // Save the query to search history
+                const newHistory = [query, ...searchHistory.filter(item => item !== query)];
+                setSearchHistory(newHistory);
+                saveSearchHistory(newHistory);
             }
         } catch (error) {
             if (error.response && error.response.status === 402) {
@@ -149,9 +177,9 @@ const ChatbotScreen = () => {
 
     const onSpeechResults = (event: any) => {
         const text = event.value[0];
-        setQuery(text); // Set recognized text as query
-        setIsListening(false); // Stop listening
-        fetchRecipes(); // Fetch recipes based on recognized text
+        setQuery(text); // Update query state with the recognized speech text
+        setIsListening(false); // Turn off listening mode
+        fetchRecipes(); // Fetch recipes based on the recognized query
     };
 
     const onSpeechError = (event: any) => {
@@ -167,46 +195,65 @@ const ChatbotScreen = () => {
         return instructions.replace(/<\/li><li>/g, '</li>\n<li>');
     };
 
+    const handleSuggestionSelect = (suggestion: string) => {
+        setQuery(suggestion);
+        setShowSuggestions(false);
+        fetchRecipes();
+    };
+
     return (
         <View style={styles.container}>
             <Sidebar show={showSidebar} onClose={closeSidebar} onSelectCategory={onSelectCategory} />
-    <View style={styles.header}>
-                    <TouchableOpacity onPress={toggleSidebar} style={styles.sidebarToggle}>
-                        <Image
-                            source={require('../images/main-menu.png')}
-                            style={styles.sidebarToggleImage}
-                        />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Foodie Helper</Text>
-                </View>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={toggleSidebar} style={styles.sidebarToggle}>
+                    <Image
+                        source={require('../images/main-menu.png')}
+                        style={styles.sidebarToggleImage}
+                    />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Foodie Helper</Text>
+            </View>
             <View style={styles.mainContent}>
-            
-
                 <View style={styles.inputContainer}>
                     <TextInput
                         label="Ask for a recipe..."
                         value={query}
-                        onChangeText={setQuery}
+                        onChangeText={(text) => {
+                            setQuery(text);
+                            setShowSuggestions(text.length > 0);
+                        }}
                         style={styles.input}
                         mode="outlined"
                         theme={{ colors: { primary: '#FF6347' } }}
+                        onFocus={() => setShowSuggestions(query.length > 0)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                     />
                     <TouchableOpacity
                         style={styles.voiceButton}
                         onPress={isListening ? stopListening : startListening}
                     >
-                        <Icon
-                            name={isListening ? 'mic' : 'mic-none'}
-                            size={30}
+                        <FontAwesomeIcon
+                            icon={isListening ? faMicrophone : faMicrophoneSlash}
+                            size={24}
                             color="#FF6347"
                         />
                     </TouchableOpacity>
                     <Button title="Search" onPress={fetchRecipes} disabled={loading} color="#FF6347" />
                 </View>
 
-                {/* <View style={styles.buttonContainer}>
-                    <Button title={isListening ? "Stop Listening" : "Use Voice"} onPress={isListening ? stopListening : startListening} color="#FF6347" />
-                </View> */}
+                {showSuggestions && (
+                    <View style={styles.suggestionsContainer}>
+                        <FlatList
+                            data={searchHistory.filter(item => item.includes(query))}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={() => handleSuggestionSelect(item)}>
+                                    <Text style={styles.suggestionItem}>{item}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    </View>
+                )}
 
                 {loading && <Text style={styles.loadingText}>Loading recipes...</Text>}
                 {error && <Text style={styles.errorText}>{error}</Text>}
@@ -221,23 +268,21 @@ const ChatbotScreen = () => {
                                     style={styles.recipeImage}
                                 />
                                 <Button
-                                    title={expandedRecipe === index ? "Hide Details" : "View Details"}
+                                    title={expandedRecipe === index ? "Hide Details" : "Show Details"}
                                     onPress={() => toggleRecipeDetails(index)}
-                                    color="#FFA500"
+                                    color="#FF6347"
                                 />
                                 {expandedRecipe === index && (
-                                    <View>
-                                        <Text style={styles.sectionTitle}>Ingredients:</Text>
-                                        <FlatList
-                                            data={recipe.ingredients}
-                                            keyExtractor={(item, idx) => idx.toString()}
-                                            renderItem={({ item }) => <Text style={styles.ingredient}>{item.name}</Text>}
-                                        />
-                                        <Text style={styles.sectionTitle}>Instructions:</Text>
+                                    <View style={styles.recipeDetails}>
+                                        <Text style={styles.recipeSectionTitle}>Ingredients:</Text>
+                                        {recipe.ingredients.map((ingredient, ingIndex) => (
+                                            <Text key={ingIndex} style={styles.recipeText}>{ingredient.name}</Text>
+                                        ))}
+                                        <Text style={styles.recipeSectionTitle}>Instructions:</Text>
                                         <HTML
                                             source={{ html: preprocessInstructions(recipe.instructions) }}
-                                            contentWidth={width * 0.9}
-                                            tagsStyles={{ p: { color: '#333', fontSize: 16 }, li: { color: '#333', fontSize: 16 } }}
+                                            contentWidth={width}
+                                            tagsStyles={{ p: styles.recipeText }}
                                         />
                                     </View>
                                 )}
@@ -246,12 +291,11 @@ const ChatbotScreen = () => {
                     ) : (
                         !loading && !error && (
                             <View style={styles.noRecipesContainer}>
-                                  <Text style={styles.noRecipesText}>Ask for a recipe using the search bar or voice input!</Text>
+                                <Text style={styles.noRecipesText}>Ask for a recipe using the search bar or voice input!</Text>
                                 <Image
                                     source={require('../images/foddieHelper.png')}
                                     style={styles.chatbotImage}
                                 />
-                              
                             </View>
                         )
                     )}
@@ -264,95 +308,93 @@ const ChatbotScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff5e1',
-    },
-    mainContent: {
-        flex: 1,
-        paddingHorizontal: 20,
-   
+        backgroundColor: '#f2f2f2',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        padding:10
+        backgroundColor: '#FF6347',
+        padding: 10,
     },
     sidebarToggle: {
-        marginRight: 10,
+        padding: 5,
     },
     sidebarToggleImage: {
-        width: 40,
-        height: 40,
-        resizeMode: 'contain',
+        width: 25,
+        height: 25,
     },
     headerTitle: {
-        fontSize: 24,
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#FF6347',
+        color: '#fff',
+    },
+    mainContent: {
+        flex: 1,
+        padding: 20,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     input: {
         flex: 1,
-        marginVertical: 10,
         marginRight: 10,
     },
     voiceButton: {
         padding: 10,
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
+    loadingText: {
+        textAlign: 'center',
+        color: '#FF6347',
+        marginBottom: 20,
+    },
+    errorText: {
+        textAlign: 'center',
+        color: 'red',
         marginBottom: 20,
     },
     recipeCard: {
-        borderWidth: 1,
-        borderColor: '#ff8c00',
-        borderRadius: 10,
         backgroundColor: '#fff',
-        marginVertical: 10,
         padding: 10,
+        borderRadius: 10,
+        marginBottom: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     recipeTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#333',
     },
     recipeImage: {
         width: '100%',
         height: 200,
-        resizeMode: 'cover',
-        marginBottom: 10,
         borderRadius: 10,
+        marginBottom: 10,
     },
-    sectionTitle: {
+    recipeDetails: {
+        marginTop: 10,
+    },
+    recipeSectionTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        marginTop: 10,
         marginBottom: 5,
-        color: '#FF6347',
     },
-    ingredient: {
-        marginLeft: 10,
+    recipeText: {
+        fontSize: 14,
         marginBottom: 5,
-        color: '#333',
-    },
-    loadingText: {
-        alignSelf: 'center',
-        marginTop: 20,
-        color: '#FF6347',
-    },
-    errorText: {
-        alignSelf: 'center',
-        marginTop: 20,
-        color: 'red',
-        fontStyle: 'italic',
     },
     noRecipesContainer: {
         alignItems: 'center',
@@ -360,13 +402,32 @@ const styles = StyleSheet.create({
     },
     chatbotImage: {
         width: '100%',
-        height: 300,
+        height: 400,
         resizeMode: 'cover',
     },
     noRecipesText: {
         marginTop: 20,
         fontStyle: 'italic',
         color: '#888',
+    },
+    suggestionsContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    suggestionItem: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        fontSize: 16,
+        color: '#333',
     },
 });
 
